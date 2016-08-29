@@ -15,4 +15,4 @@ I'm using the following python libs
 
 ## Observations
 
-This is a personal project, it is not very tidy or fancy but it has quite a lot comments in the code to understand whats going on.
+This is a personal project, it is not very tidy or fancy but it has quite a lot comments (in spanish) in the code to understand whats going on.
