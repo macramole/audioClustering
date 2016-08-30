@@ -21,6 +21,7 @@ BPM = 116 #smell
 # BPM = 98 baby
 
 SEGUNDOS_FILA = ceil( 60/BPM ) * 4 #el multiplicador final serían los compaces
+SEGUNDOS_FILA = 0.2
 
 print("Tomando",SEGUNDOS_FILA,"segundos")
 print("Llenando de silencio al final para que me quede cortable...")
@@ -48,33 +49,35 @@ matrixAudioData = audioData.reshape( ( int(newDataSize/ (sampleRate*SEGUNDOS_FIL
 print("shape de la matriz de audio crudo:", matrixAudioData.shape)
 # print(matrixAudioData[0])
 # print(matrixAudioData[1])
-# print(matrixAudioData[1].size)
+print(matrixAudioData[1].shape)
 
 ######################################
 # hago fft y lo junto a mi dataset   #
 ######################################
-from numpy.fft import fft, fftfreq
-CANT_FRECUENCIES = 2000
+# from numpy.fft import fft, fftfreq
+# CANT_FRECUENCIES = 2000
+#
+# print("haciendo fft a cada fila")
+# i=0
+# freqAmps = []
+# for row in matrixAudioData:
+#     freqs = fft(row, n = CANT_FRECUENCIES)
+#     # freqAmps = np.vstack( (freqAmps, np.absolute (freqs)) )
+#     freqAmps.append( np.absolute (freqs) )
+#     # plt.figure(i)
+#     # plt.plot(freqsAmp)
+#     # i += 1
+# # plt.show()
+#
+# freqAmps = np.array(freqAmps)
+# # print("freqAmps", freqAmps.shape)
+#
+# matrixAudioData = np.hstack((matrixAudioData, freqAmps))
+# print("matriz final con audio crudo y fft", matrixAudioData.shape)
 
-print("haciendo fft a cada fila")
-i=0
-freqAmps = []
-for row in matrixAudioData:
-    freqs = fft(row, n = CANT_FRECUENCIES)
-    # freqAmps = np.vstack( (freqAmps, np.absolute (freqs)) )
-    freqAmps.append( np.absolute (freqs) )
-    # plt.figure(i)
-    # plt.plot(freqsAmp)
-    # i += 1
-# plt.show()
-
-freqAmps = np.array(freqAmps)
-# print("freqAmps", freqAmps.shape)
-
-matrixAudioData = np.hstack((matrixAudioData, freqAmps))
-print("matriz final con audio crudo y fft", matrixAudioData.shape)
-
-# hago PCA
+############
+# hago PCA #
+############
 print("")
 from sklearn.decomposition import PCA
 pca = PCA(n_components=200) #asi explicaba 95%
@@ -135,20 +138,30 @@ from scipy.spatial import distance as dist
 
 distanceMatrix = dist.pdist(matrixAudioDataTransformed, 'canberra') #canberra (0.8), cityblock (0.76), braycurtis(0.77)
 clusters = h.linkage(distanceMatrix, 'average')
+
+
 c,d=h.cophenet(clusters, distanceMatrix) #factor cofonético
 print("cofonetica:",c)
 
-THRESHOLD = 56.5
+THRESHOLD = 147.22
 
 cutTree = h.cut_tree(clusters, height= THRESHOLD)
-minutos = 0
-segundos = 0
-for label in cutTree:
-    print(str(minutos) + ":" + str(segundos), str(label))
-    segundos += SEGUNDOS_FILA
-    if ( segundos >= 60 ):
-        minutos += 1
-        segundos -= 60
+# minutos = 0
+# segundos = 0
+# for label in cutTree:
+#     print(str(minutos) + ":" + str(segundos), str(label))
+#     segundos += SEGUNDOS_FILA
+#     if ( segundos >= 60 ):
+#         minutos += 1
+#         segundos -= 60
+
+# print(clusters.shape)
+# print(clusters)
+# exit()
+
+matrixAudioDataAndCluster = np.hstack((matrixAudioDataTransformed, clusters))
+print(matrixAudioDataAndCluster)
+print(matrixAudioDataAndCluster.shape)
 
 plt.figure()
 dn = h.dendrogram(clusters, color_threshold = THRESHOLD)
