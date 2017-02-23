@@ -81,6 +81,7 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
     d.x = +d.x;
     d.y = +d.y;
     d.cluster = +d.cluster;
+    d.file = d.file.replace(".wav", ".mp3");
   });
 
   // don't want dots overlapping axis, so add in buffer to data domain
@@ -121,16 +122,16 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
       .attr("cy", yMap)
       .style("fill", function(d) { return color(cValue(d));})
       .on("click", function(d) {
-          audio.src = "sounds/" + d.file;
-          audio.play();
-
-          d3.select(this).attr("r", DOT_SIZE * 3).transition().attr("r", DOT_SIZE);
+            audio.src = "sounds.mp3/" + d.file;
+            audio.play();
+            d3.select(this).attr("r", DOT_SIZE * 3).transition().attr("r", DOT_SIZE);
       })
       .on("mouseover", function(d) {
           tooltip.transition()
                .duration(200)
                .style("opacity", .9);
-          tooltip.html("Filename:" + d.file)
+        //   tooltip.html("Filename:" + d.file)
+          tooltip.html("<img src='espectrogramas/" + data.indexOf(d) + ".png' />")
                .style("left", (d3.event.pageX + 5) + "px")
                .style("top", (d3.event.pageY - 28) + "px");
       })
