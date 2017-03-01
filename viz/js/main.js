@@ -7,6 +7,11 @@ var audio = $("#audio")[0];
 
 var DOT_SIZE = 4;
 
+var mostrarEspectrograma = false;
+$("#mostrarEspectrograma").click( function() {
+    mostrarEspectrograma = $(this).is(":checked");
+});
+
 //zoom
 var zoom = d3.behavior.zoom()
     .scaleExtent([1,10])
@@ -125,20 +130,31 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
             audio.src = "sounds.mp3/" + d.file;
             audio.play();
             d3.select(this).attr("r", DOT_SIZE * 3).transition().attr("r", DOT_SIZE);
+            console.log( "Playing: " + audio.src );
       })
       .on("mouseover", function(d) {
-          tooltip.transition()
-               .duration(200)
-               .style("opacity", .9);
-        //   tooltip.html("Filename:" + d.file)
-          tooltip.html("<img src='espectrogramas/" + data.indexOf(d) + ".png' />")
-               .style("left", (d3.event.pageX + 5) + "px")
-               .style("top", (d3.event.pageY - 28) + "px");
+          d3.select(this).style("stroke", "black");
+
+          if ( mostrarEspectrograma ) {
+              tooltip.transition()
+              .duration(200)
+              .style("opacity", 1);
+              //   tooltip.html("Filename:" + d.file)
+              tooltip.html("<div>" + d.file + "</div><img src='espectrogramas/" + data.indexOf(d) + ".png' />")
+            //   .style("left", (d3.event.pageX + 5) + "px")
+            //   .style("top", (d3.event.pageY - 28) + "px");
+              ;
+          }
       })
       .on("mouseout", function(d) {
-          tooltip.transition()
-               .duration(500)
-               .style("opacity", 0);
+          d3.select(this).style("stroke", "");
+
+          if ( mostrarEspectrograma ) {
+              tooltip.transition()
+                   .duration(500)
+                   .style("opacity", 0)
+                   ;
+          }
       });
 
   // draw legend

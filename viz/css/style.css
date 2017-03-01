@@ -17,7 +17,29 @@ body {
 
 .tooltip {
   position: absolute;
-  width: 200px;
-  height: 28px;
   pointer-events: none;
+  white-space: nowrap;
+  background-color: white;
+  top: 4%;
+  left: 1%;
+}
+
+.tooltip div {
+    text-align: center;
+    font-weight: bold;
+}
+
+#divMostrarEspectrograma {
+    background-color: white;
+    position: absolute;
+    top: 1%;
+    left: 1%;
+}
+
+#divMostrarEspectrograma label {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    top: -4px;
 }
