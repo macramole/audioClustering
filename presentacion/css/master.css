@@ -1,0 +1,88 @@
+@font-face {
+  font-family: 'Archivo Narrow';
+  src: url("fonts/ArchivoNarrow-Bold.ttf") format('truetype'); /* Safari, Android, iOS */
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'Archivo Narrow';
+  src: url("fonts/ArchivoNarrow-Italic.ttf") format('truetype'); /* Safari, Android, iOS */
+  font-style: italic, oblique;
+}
+@font-face {
+  font-family: 'Archivo Narrow';
+  src: url("fonts/ArchivoNarrow-Regular.ttf") format('truetype'); /* Safari, Android, iOS */
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  font-family: "Arial";
+  font-size: 18px;
+  background: url("../img/bg.png");
+}
+h1,
+h2,
+h3 {
+  font-family: "Archivo Narrow";
+}
+h1 {
+  font-size: 3em;
+  padding: 1em 0 1em 0;
+  margin: 0;
+}
+h4 {
+  font-weight: normal;
+  font-family: "Archivo Narrow";
+  font-style: normal;
+  font-size: 2em;
+/* position: absolute; */
+/* top: 2em; */
+  margin: 0;
+  margin-bottom: 3em;
+}
+ul {
+  font-size: 1.5em;
+  text-align: left;
+  width: 80%;
+  margin: 0 auto;
+}
+ul li {
+  margin-bottom: 0.7em;
+}
+img {
+  max-width: 90%;
+}
+#hola {
+  font-size: 1.3em;
+}
+#hola .fp-tableCell {
+  vertical-align: middle;
+}
+#hola h1 {
+  position: static;
+  transform: none;
+  font-size: 2em;
+  padding: 0;
+}
+#hola h3 {
+  margin-bottom: 3em;
+  font-style: italic;
+  font-weight: normal;
+}
+#hola img {
+  width: 50%;
+}
+#hola i {
+  display: block;
+  font-size: 0.8em;
+  margin-top: 0.4em;
+}
+.section {
+  text-align: center;
+}
+.centered {
+  margin-top: 10%;
+}
+.fp-tableCell {
+  vertical-align: top;
+}
+/*# sourceMappingURL=master.css.map */
