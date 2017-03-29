@@ -7,6 +7,12 @@ var audio = $("#audio")[0];
 
 var DOT_SIZE = 4;
 
+var cantClusters = null;
+var nombreClusters = ["Platos / Agudos", "Bombos / Graves", "Redoblantes / Congas / Medios altos", "Toms bajos / Medios graves", "Campanas"];
+
+var shiftPressed = false;
+
+
 var mostrarEspectrograma = false;
 $("#mostrarEspectrograma").click( function() {
     mostrarEspectrograma = $(this).is(":checked");
@@ -82,12 +88,23 @@ var tooltip = d3.select("body").append("div")
 d3.tsv("audioClusteringResult.tsv", function(error, data) {
 
   // change string (from CSV) into number format
+  var maxCluster = 0;
+
   data.forEach(function(d) {
     d.x = +d.x;
     d.y = +d.y;
     d.cluster = +d.cluster;
+
+    if ( d.cluster > maxCluster ) {
+        maxCluster = d.cluster;
+    }
+
     d.file = d.file.replace(".wav", ".mp3");
   });
+
+  cantClusters = maxCluster;
+
+  renderClustersItems();
 
   // don't want dots overlapping axis, so add in buffer to data domain
   xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
@@ -125,17 +142,19 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
       .attr("r", DOT_SIZE)
       .attr("cx", xMap)
       .attr("cy", yMap)
+      .attr("data-cluster", function(d) { return d.cluster })
       .style("fill", function(d) { return color(cValue(d));})
       .on("click", function(d) {
-            audio.src = "sounds.mp3/" + d.file;
-            audio.play();
-            d3.select(this).attr("r", DOT_SIZE * 3).transition().attr("r", DOT_SIZE);
-            console.log( "Playing: " + audio.src );
+          if ( !d3.select(this).classed("filtered") ) {
+              audio.src = "sounds.mp3/" + d.file;
+              audio.play();
+              d3.select(this).attr("r", DOT_SIZE * 3).transition().attr("r", DOT_SIZE);
+          }
       })
       .on("mouseover", function(d) {
           d3.select(this).style("stroke", "black");
 
-          if ( mostrarEspectrograma ) {
+          if ( mostrarEspectrograma && !d3.select(this).classed("filtered")  ) {
               tooltip.transition()
               .duration(200)
               .style("opacity", 1);
@@ -179,3 +198,53 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
   //     .style("text-anchor", "end")
   //     .text(function(d) { return d;})
 });
+
+function filterCluster(cluster) {
+    $dots = $(".dot[data-cluster='" + cluster + "']");
+    if ( $dots.eq(0).hasClass("filtered") ) {
+        $dots.removeClass("filtered");
+    } else {
+        $dots.addClass("filtered");
+    }
+}
+
+function renderClustersItems() {
+    // $("body").mousedown(function(e) {
+    //     shiftPressed = e.shiftKey;
+    // })
+    for( var i = 0 ; i <= cantClusters ; i++ ) {
+        var $container = $("<div class='cluster'>");
+        var $check = $("<input type='checkbox' />").val(i).attr("id", "chkCluster" + i).attr("checked", true);
+        var $item = $("<label for='" + "chkCluster" + i + "'>").text( nombreClusters[i] + " (" + i + ")").attr("data-cluster", i);
+
+        $item.css("background-color", color(i));
+        $container.css("border-color", color(i));
+
+        $container.append($check).append($item);
+        $("#clusterItems").append($container)
+
+        $check.change(function() {
+            filterCluster ( $(this).val() );
+            // if ( shiftPressed ) {
+            //     console.log("asd");
+            // }
+        });
+
+        $item.mouseover( function() {
+            if ( mostrarEspectrograma ) {
+                tooltip.transition().duration(200)
+                .style("opacity", 1);
+                tooltip.html("<img src='espectrogramasCluster/" + $(this).attr("data-cluster") + ".png' />")
+            }
+        });
+        $item.mouseleave( function() {
+            if ( mostrarEspectrograma ) {
+                tooltip
+                .transition()
+                .duration(500)
+                .style("opacity", 0)
+                ;
+            }
+        });
+    }
+}

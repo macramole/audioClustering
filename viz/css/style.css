@@ -12,7 +12,11 @@ body {
 }
 
 .dot {
-  /*stroke: #000;*/
+    /*opacity: 1;
+    transition: opacity 0.4s;*/
+}
+.dot.filtered {
+  opacity: 0;
 }
 
 .tooltip {
@@ -20,7 +24,7 @@ body {
   pointer-events: none;
   white-space: nowrap;
   background-color: white;
-  top: 4%;
+  top: 8%;
   left: 1%;
 }
 
@@ -42,4 +46,18 @@ body {
     -webkit-user-select: none;
     position: relative;
     top: -4px;
+}
+#divMostrarEspectrograma #clusterItems {
+    margin-top: 1em;
+}
+#divMostrarEspectrograma #clusterItems .cluster {
+    border: 1px solid black;
+    display: inline-block;
+    margin-right: 1.5em;
+}
+#divMostrarEspectrograma #clusterItems .cluster label {
+    position: relative;
+    top: -4px;
+    padding: 5px 10px;
+    color: white;
 }
