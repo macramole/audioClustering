@@ -38,40 +38,207 @@
                         <li>Análisis de componentes principales (PCA)</li>
                         <li>Agrupamiento jerárquico</li>
                         <li>Escalamiento multidimensional (MDS)</li>
+                        <li>Test de normalidad univariado (Shapiro)</li>
+                        <li>Test de homocedasticidad multivariado (M de Box)</li>
+                        <li>Scatterplot</li>
                     </ul>
             	</div>
                 <div class="slide">
                     <img src="img/proceso.png" alt="" class="centered" />
             	</div>
             </div>
-            <div class="section" id="proceso">
+            <div class="section" >
                 <h1>Descripción del conjunto de datos</h1>
                 <div class="slide">
                     <ul>
                         <li>2183 archivos de audio</li>
-                        <li>Máquinas de ritmos clásicas de los 80's</li>
-                        <li>Bombo, redoblante, platillo</li>
+                        <li>
+                            Máquinas de ritmos clásicas de los 80's
+                            <ul>
+                                <li>Bombo</li>
+                                <li>Redoblante</li>
+                                <li>Platillo</li>
+                            </ul>
+                        </li>
+                        <li>Provenientes de distintas fuentes</li>
+                        <li>¿Cómo obtener una matriz de datos para poder aplicar las técnicas?</li>
+
                     </ul>
                 </div>
                 <div class="slide">
-                    <img src="img/sonido1.png" alt="" class="centered" />
+                    <h4>Representación del audio en el dominio del tiempo</h4>
+                    <img src="img/sonido1.png" alt="" />
                 </div>
                 <div class="slide">
-                    <img src="img/sonido2.png" alt="" class="centered" />
+                    <h4>Acercamiento</h4>
+                    <img src="img/sonido2.png" alt="" class="" />
                 </div>
             </div>
+            <div class="section" >
+                <h1>Preprocesamiento</h1>
+                <div class="slide">
+                    <ul>
+                        <li>
+                            Conversión de todos los archivos a un formato común:
+                            <ul>
+                                <li><strong>Formato</strong>: WAV</li>
+                                <li><strong>Cantidad de canales</strong>: 1</li>
+                                <li><strong>Frecuencia de muestreo</strong>: 22050Hz</li>
+                                <li><strong>Profundidad de bits</strong>: 16</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Short Time Fourier Transformation (STFT)
+                            <ul>
+                                <li>
+                                    1025 frecuencias
+                                </li>
+                                <li>
+                                    44 ventanas ( ~23ms cada una )
+                                </li>
+                            </ul>
+                        </li>
+                </div>
+                <div class="slide">
+                    <h4>
+                        Fast Fourier Transformation (FFT) <br />
+                        Representación del audio en el dominio de la frecuencia
+                    </h4>
+                    <img src="img/fft.png" alt="" />
+                </div>
+                <div class="slide">
+                    <h4>Short Time Fourier Transformation (STFT)</h4>
+                    <img src="img/stft.png" alt="" />
+                    <img src="img/stft2.png" alt="" />
+                </div>
+            </div>
+            <div class="section">
+                <h1>Características de la base</h1>
+                <ul>
+                    <li>
+                        45100 variables
+                    </li>
+                    <li>
+                        2183 filas
+                    </li>
+                    <li>
+                        Rango: [-3.4E+38 : +3.4E+38]
+                    </li>
+                    <li>
+                        Test de normalidad univariado de Shapiro arroja que ninguna de las variables es normal
+                    </li>
+                </ul>
+            </div>
+            <div class="section">
+                <h1>Análisis de componentes principales (PCA)</h1>
+                <ul>
+                    <li>
+                        800 componentes
+                    </li>
+                    <li>
+                        Explica 99% de la variabilidad
+                    </li>
+                </ul>
+            </div>
+            <div class="section">
+                <h1>Agrupamiento jerárquico</h1>
+                <div class="slide">
+                    <ul>
+                        <li>
+                            <strong>Definición de distancia:</strong> Similitud coseno
+                        </li>
+                        <li>
+                            <strong>Criterio de enlace:</strong> promedio
+                        </li>
+                        <li>
+                            <strong>Factor cofonético:</strong> 0.78
+                        </li>
+                    </ul>
+                </div>
+                <div class="slide">
+                    <h4 style="margin-bottom: 1em;">Dendograma</h4>
+                    <ul>
+                        <li>
+                            <strong>Punto de corte:</strong> 0.94
+                        </li>
+                        <li>
+                            Grupos:
+                            <ul>
+                                <li>
+                                    1 grupo mayoritario, 1048 registros
+                                </li>
+                                <li>
+                                    3 grupos parejos, 367, 362 y 349 registros
+                                </li>
+                                <li>
+                                    1 grupo minoritario, 2 registros
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <img src="img/dendograma.png" style="margin-top: 2em;" />
+                </div>
+                <div class="slide">
+                    <h4 style="margin-bottom: 1em;">Espectrogramas medios por agrupamiento</h4>
+                    <img src="img/grilla.png" />
+                </div>
+            </div>
+            <div class="section">
+                <h1>Escalamiento multidimensional (MDS)</h1>
 
-            <!-- <div class="section" data-anchor="trabajos" id="sectionTrabajos">
-            	<div class="slide" data-anchor="todos">
+                <audio id="audio"></audio>
+                <div id="divMostrarEspectrograma">
+                    <input type="checkbox" id="mostrarEspectrograma" /><label for="mostrarEspectrograma">Mostrar espectrogramas</label>
+                    <div id="clusterItems"></div>
+                </div>
 
-            	</div>
-                <div class="slide" data-anchor="ver" id="ver">
 
-            	</div>
-            </div> -->
+            </div>
+            <div class="section">
+                <h1>Software</h1>
+                <ul>
+                    <li>
+                        Jupyter Notebook
+                    </li>
+                    <li>
+                        Python: sklearn, scipy, numpy, pandas, librosa y matplotlib
+                    </li>
+                    <li>
+                        Javascript: d3.js
+                    </li>
+                </ul>
+            </div>
+            <div class="section">
+                <h1>Discusión y conclusiones</h1>
+                <ul>
+                    <li>
+                        Jupyter Notebook
+                    </li>
+                </ul>
+            </div>
+            <div class="section">
+                <h1>Referencias bibliográficas</h1>
+                <ul>
+                    <li>
+                        Burka, Zak, "Perceptual audio classification using principal component analysis"
+    (2010). Thesis. Rochester Institute of Technology.
+                    </li>
+                    <li>
+                        Lukáš Lalinský - How does Chromaprint work?
+                    </li>
+                    <li>
+                        Yan Ke, Derek Hoiem, Rahul Sukthankar. Computer Vision for Music
+                        Identification, Proceedings of Computer Vision and Pattern Recognition, 2005.
+                    </li>
+                    <li>
+                        Google AI Experiments - The infinite drum machine
+                    </li>
+                </ul>
+            </div>
         </div>
 
 
+        <script src="js/d3.v3.min.js"></script>
         <script src="js/jquery-3.1.1.min.js" charset="utf-8"></script>
         <script src="js/jquery.fullPage.js" charset="utf-8"></script>
         <script src="js/main.js" charset="utf-8"></script>
