@@ -31,7 +31,7 @@ h1 {
     // left: 50%;
     // transform: translate(-50%,0);
     font-size: 3em;
-    padding: 1em 0 1em 0;
+    padding: 0.5em 0 0.5em 0;
     margin: 0;
 }
 h4 {
@@ -49,6 +49,7 @@ ul {
     text-align: left;
     width: 80%;
     margin: 0 auto;
+
     li {
         margin-bottom: 0.7em;
     }
@@ -56,6 +57,7 @@ ul {
     ul {
         font-size: 1em;
         margin: 1em 0 0 1em;
+        color: #535353;
     }
 }
 img {
@@ -101,4 +103,77 @@ img {
 
 .fp-tableCell {
 	vertical-align: top;
+}
+
+#viz {
+    background-color: white;
+
+    h1 {
+        padding-bottom: 0.3em;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .dot {
+        /*opacity: 1;
+        transition: opacity 0.4s;*/
+    }
+    .dot.filtered {
+      opacity: 0;
+    }
+
+    .tooltip {
+        pointer-events: none;
+        white-space: nowrap;
+        background-color: white;
+        top: 19%;
+        left: 0%;
+        position: absolute;
+    }
+
+    .tooltip div {
+        text-align: center;
+        font-weight: bold;
+        font-size: 0.6em;
+    }
+
+    #divMostrarEspectrograma {
+        background-color: white;
+        text-align: left;
+        // position: absolute;
+        // top: 1%;
+        // left: 1%;
+        font-size: 0.8em;
+        padding-left: 2em;
+
+        label {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+            top: -4px;
+        }
+
+        #clusterItems {
+            margin-top: 1em;
+
+            .cluster {
+                border: 1px solid black;
+                display: inline-block;
+                margin-right: 1.5em;
+
+                label {
+                    position: relative;
+                    top: -2px;
+                    padding: 3px 10px;
+                    color: #fff;
+                }
+            }
+        }
+    }
 }

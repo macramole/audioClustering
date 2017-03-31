@@ -26,7 +26,7 @@ h3 {
 }
 h1 {
   font-size: 3em;
-  padding: 1em 0 1em 0;
+  padding: 0.5em 0 0.5em 0;
   margin: 0;
 }
 h4 {
@@ -51,6 +51,7 @@ ul li {
 ul ul {
   font-size: 1em;
   margin: 1em 0 0 1em;
+  color: #535353;
 }
 img {
   max-width: 90%;
@@ -88,5 +89,60 @@ img {
 }
 .fp-tableCell {
   vertical-align: top;
+}
+#viz {
+  background-color: #fff;
+}
+#viz h1 {
+  padding-bottom: 0.3em;
+}
+#viz .axis path,
+#viz .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+#viz .dot.filtered {
+  opacity: 0;
+}
+#viz .tooltip {
+  pointer-events: none;
+  white-space: nowrap;
+  background-color: #fff;
+  top: 19%;
+  left: 0%;
+  position: absolute;
+}
+#viz .tooltip div {
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.6em;
+}
+#viz #divMostrarEspectrograma {
+  background-color: #fff;
+  text-align: left;
+  font-size: 0.8em;
+  padding-left: 2em;
+}
+#viz #divMostrarEspectrograma label {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  top: -4px;
+}
+#viz #divMostrarEspectrograma #clusterItems {
+  margin-top: 1em;
+}
+#viz #divMostrarEspectrograma #clusterItems .cluster {
+  border: 1px solid #000;
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#viz #divMostrarEspectrograma #clusterItems .cluster label {
+  position: relative;
+  top: -2px;
+  padding: 3px 10px;
+  color: #fff;
 }
 /*# sourceMappingURL=master.css.map */

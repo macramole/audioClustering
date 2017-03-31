@@ -50,10 +50,11 @@
             <div class="section" >
                 <h1>Descripción del conjunto de datos</h1>
                 <div class="slide">
+                    <h4></h4>
                     <ul>
                         <li>2183 archivos de audio</li>
                         <li>
-                            Máquinas de ritmos clásicas de los 80's
+                            68 máquinas de ritmos clásicas de los 80's
                             <ul>
                                 <li>Bombo</li>
                                 <li>Redoblante</li>
@@ -77,6 +78,7 @@
             <div class="section" >
                 <h1>Preprocesamiento</h1>
                 <div class="slide">
+                    <h4></h4>
                     <ul>
                         <li>
                             Conversión de todos los archivos a un formato común:
@@ -114,6 +116,7 @@
             </div>
             <div class="section">
                 <h1>Características de la base</h1>
+                <h4></h4>
                 <ul>
                     <li>
                         45100 variables
@@ -131,6 +134,7 @@
             </div>
             <div class="section">
                 <h1>Análisis de componentes principales (PCA)</h1>
+                <h4></h4>
                 <ul>
                     <li>
                         800 componentes
@@ -143,6 +147,7 @@
             <div class="section">
                 <h1>Agrupamiento jerárquico</h1>
                 <div class="slide">
+                    <h4></h4>
                     <ul>
                         <li>
                             <strong>Definición de distancia:</strong> Similitud coseno
@@ -183,7 +188,7 @@
                     <img src="img/grilla.png" />
                 </div>
             </div>
-            <div class="section">
+            <div class="section" id="viz">
                 <h1>Escalamiento multidimensional (MDS)</h1>
 
                 <audio id="audio"></audio>
@@ -191,11 +196,10 @@
                     <input type="checkbox" id="mostrarEspectrograma" /><label for="mostrarEspectrograma">Mostrar espectrogramas</label>
                     <div id="clusterItems"></div>
                 </div>
-
-
             </div>
             <div class="section">
                 <h1>Software</h1>
+                <h4></h4>
                 <ul>
                     <li>
                         Jupyter Notebook
@@ -210,14 +214,50 @@
             </div>
             <div class="section">
                 <h1>Discusión y conclusiones</h1>
+                <h4></h4>
                 <ul>
                     <li>
-                        Jupyter Notebook
+                        Grupos demasiado generales
+                        <ul>
+                            <li>
+                                Bajar el umbral establecido en el dendograma sólo genera muchos grupos de 1 solo individuo
+                            </li>
+                        </ul>
                     </li>
+                    <li>
+                        Utilizar más variables que expresen otras características sonoras
+                        <ul>
+                            <li>
+                                Audio crudo + STFT
+                            </li>
+                            <li>
+                                Métricas de envolvente, de altura, etc.
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        Comparar con otros algoritmos de clustering
+                        <ul>
+                            <li>
+                                PAM
+                            </li>
+                            <li>
+                                SOM
+                            </li>
+                            <li>
+                                DBScan
+                            </li>
+                            <li>
+                                Clustering difuso
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
             </div>
             <div class="section">
                 <h1>Referencias bibliográficas</h1>
+                <h4></h4>
                 <ul>
                     <li>
                         Burka, Zak, "Perceptual audio classification using principal component analysis"
@@ -242,5 +282,6 @@
         <script src="js/jquery-3.1.1.min.js" charset="utf-8"></script>
         <script src="js/jquery.fullPage.js" charset="utf-8"></script>
         <script src="js/main.js" charset="utf-8"></script>
+        <script src="js/viz.js" charset="utf-8"></script>
     </body>
 </html>
