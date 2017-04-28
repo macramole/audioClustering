@@ -12,6 +12,7 @@ var nombreClusters = ["Platos / Agudos", "Bombos / Graves", "Redoblantes / Conga
 
 var shiftPressed = false;
 
+var cantPerCluster;
 
 var mostrarEspectrograma = false;
 $("#mostrarEspectrograma").click( function() {
@@ -90,16 +91,24 @@ d3.tsv("audioClusteringResult.tsv", function(error, data) {
   // change string (from CSV) into number format
   var maxCluster = 0;
 
+  cantPerCluster = [];
+
   data.forEach(function(d) {
-    d.x = +d.x;
-    d.y = +d.y;
-    d.cluster = +d.cluster;
+      d.x = +d.x;
+      d.y = +d.y;
+      d.cluster = +d.cluster;
 
-    if ( d.cluster > maxCluster ) {
-        maxCluster = d.cluster;
-    }
+      if ( !cantPerCluster[d.cluster] ) {
+          cantPerCluster[d.cluster] = 1;
+      } else {
+          cantPerCluster[d.cluster]++;
+      }
 
-    d.file = d.file.replace(".wav", ".mp3");
+      if ( d.cluster > maxCluster ) {
+          maxCluster = d.cluster;
+      }
+
+      d.file = d.file.replace(".wav", ".mp3");
   });
 
   cantClusters = maxCluster;
@@ -215,13 +224,14 @@ function renderClustersItems() {
     for( var i = 0 ; i <= cantClusters ; i++ ) {
         var $container = $("<div class='cluster'>");
         var $check = $("<input type='checkbox' />").val(i).attr("id", "chkCluster" + i).attr("checked", true);
-        var $item = $("<label for='" + "chkCluster" + i + "'>").text( nombreClusters[i] + " (" + i + ")").attr("data-cluster", i);
+        // var $item = $("<label for='" + "chkCluster" + i + "'>").text( nombreClusters[i] + " (" + i + ")").attr("data-cluster", i);
+        var $item = $("<label for='" + "chkCluster" + i + "'>").text( nombreClusters[i] + " (" + cantPerCluster[i] + ")" ).attr("data-cluster", i);
 
         $item.css("background-color", color(i));
         $container.css("border-color", color(i));
 
         $container.append($check).append($item);
-        $("#clusterItems").append($container)
+        $("#clusterItems").append($container);
 
         $check.change(function() {
             filterCluster ( $(this).val() );

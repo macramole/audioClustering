@@ -95,10 +95,10 @@ print("time:", toc - tic)
 
 #%% Guardar para no tener que procesar mil veces
 
-np.save("matrixAudioDataWithRawData", matrixAudioData)
+#np.save("matrixAudioDataWithRawData", matrixAudioData)
 
-#matrixAudioData = np.load("matrixAudioData.npy")
-#matrixAudioData.shape
+matrixAudioData = np.load("matrixAudioData.npy")
+matrixAudioData.shape
 
 #%% Principal component analysis
 
@@ -141,7 +141,8 @@ print("time:", toc - tic)
 
 #%% Dendograma
 
-THRESHOLD = 0.942
+#THRESHOLD = 0.942
+THRESHOLD = 0.88
 
 
 cutTree = h.cut_tree(clusters, height= THRESHOLD)
@@ -362,7 +363,7 @@ output = np.c_[ positions, cutTree, audioFilesForExport ]
 
 ## Para visualizar 
 
-np.savetxt("audioClusteringResult.tsv", 
+np.savetxt("audioClusteringResultWithRaw.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",
