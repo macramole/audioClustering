@@ -2,3 +2,4 @@ bpm-tools
 data
 results
 matrixAudioData.npy
+audioClusteringUi/bin/data

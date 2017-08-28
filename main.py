@@ -18,7 +18,8 @@ SAMPLE_RATE = 22050
 SIZE_STFT = 45100 #esto seguramente se pueda calcular pero bue
 
 SEGUNDOS_FILA = 1
-SELECCION_DIR = "data/sound/pack/drumkits/"
+SELECCION_DIR = "data/else/"
+FILE_TYPE=".mp3"
 
 def doSTFT(data):
     D = librosa.stft(data)
@@ -32,7 +33,7 @@ def findMusic(directory):
     for file in os.listdir(directory):
         if os.path.isdir(directory + file):
             musicFiles += findMusic(directory + file + "/")
-        elif file.endswith(".wav"):
+        elif file.endswith(FILE_TYPE):
             musicFiles.append( directory + file )
         else:
             if not file.endswith(".asd"):
@@ -142,7 +143,7 @@ print("time:", toc - tic)
 #%% Dendograma
 
 #THRESHOLD = 0.942
-THRESHOLD = 0.88
+THRESHOLD = 0.942
 
 
 cutTree = h.cut_tree(clusters, height= THRESHOLD)
@@ -287,7 +288,34 @@ matrizContingencia
 from scipy.stats import chi2_contingency
 chi2, p, dof, expected = chi2_contingency(matrizContingencia)
 
-#%% Espectrogramas Promedio por cluster
+
+
+#%% Output
+
+audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles ) )
+output = np.c_[ positions, cutTree, audioFilesForExport ]
+
+
+## Para visualizar 
+
+np.savetxt("audioClusteringResultWithRaw.tsv", 
+           output, 
+           fmt = "%s", 
+           header = "x\ty\tcluster\tfile",
+           delimiter = "\t") 
+#
+### Matriz de contingencia
+#
+#np.savetxt("matrizContingencia-observado.tsv", 
+#           matrizContingencia, 
+#           fmt = "%s", 
+#           delimiter = "\t") 
+#np.savetxt("matrizContingencia-esperado.tsv", 
+#           expected, 
+#           fmt = "%s", 
+#           delimiter = "\t") 
+
+# Espectrogramas Promedio por cluster
 
 import scipy.stats
 
@@ -354,31 +382,6 @@ plt.colorbar(format='%+2.0f dB')
 plt.show()
 #matplotlib.pyplot.savefig(ESPECTROGRAMA_SAVE_TO + str(i) + ".png", bbox_inches='tight')
 #plt.close(fig)
-
-#%% Output
-
-audioFilesForExport = list( map( lambda x : x[25:], audioFiles ) )
-output = np.c_[ positions, cutTree, audioFilesForExport ]
-
-
-## Para visualizar 
-
-np.savetxt("audioClusteringResultWithRaw.tsv", 
-           output, 
-           fmt = "%s", 
-           header = "x\ty\tcluster\tfile",
-           delimiter = "\t") 
-
-## Matriz de contingencia
-
-np.savetxt("matrizContingencia-observado.tsv", 
-           matrizContingencia, 
-           fmt = "%s", 
-           delimiter = "\t") 
-np.savetxt("matrizContingencia-esperado.tsv", 
-           expected, 
-           fmt = "%s", 
-           delimiter = "\t") 
 
 ## Espectrogramas
 
