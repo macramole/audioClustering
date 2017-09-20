@@ -14,7 +14,7 @@ import librosa.core
 import matplotlib
 import matplotlib.pyplot as plt
 
-import sounddevice as sd
+import sounddevice as sd #conda install portaudio
 
 #%% Load Audio
 
@@ -23,7 +23,8 @@ SEGUNDOS_FILA = 1
 SIZE_AUDIO_RAW = ceil(SAMPLE_RATE * SEGUNDOS_FILA)
 
 
-SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
+#SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
+SELECCION_DIR = "data/sound/else/"
 FILE_TYPE=".mp3"
 
 def findMusic(directory):
@@ -53,8 +54,8 @@ SIZE_STFT = 45100 #esto seguramente se pueda calcular pero bue
 def doSTFT(data):
     D = librosa.stft(data)
     D = np.abs(D)
-#    return D.reshape(1, D.shape[0] * D.shape[1] )
-    return D.reshape(D.shape[0] * D.shape[1] )
+    return D.reshape(1, D.shape[0] * D.shape[1] )
+#    return D.reshape(D.shape[0] * D.shape[1] )
 
 SIZE_ZERO_CROSSING_RATE = 22 #esto seguramente se pueda calcular pero bue
 def getZeroCrossingRate(data):
@@ -122,12 +123,16 @@ plt.legend(loc='best')
 #%% Audio Process
 
 #matrixAudioDataNoFFT = np.empty((0,ceil(SAMPLE_RATE * SEGUNDOS_FILA)), np.int16)
-#matrixAudioData = np.empty((0, SIZE_STFT), np.float32)
+#matrixAudioData = np.empty(( len(audioFiles) , SIZE_STFT), np.float32)
 #matrixAudioData = np.empty((0, SIZE_STFT + SIZE_AUDIO_RAW ), np.float32)
-matrixAudioData = np.empty((0, SIZE_STFT + SIZE_AUDIO_RAW ), np.float32)
+#matrixAudioData = np.empty((0, SIZE_STFT + SIZE_AUDIO_RAW ), np.float32)
 
 count = 0
+countFail = 0
 COUNT_NOTICE = 200
+COUNT_FAIL = 20
+
+listAudioData = []
 
 tic = time.clock()
 
@@ -141,22 +146,33 @@ for file in audioFiles:
 
         stft = doSTFT(tmpAudioData)
     
-        stftYRawData = np.concatenate( (stft, tmpAudioData ) )
-        stftYRawData = stftYRawData.reshape(1, stftYRawData.shape[0])
+#        stftYRawData = np.concatenate( (stft, tmpAudioData ) )
+#        stftYRawData = stftYRawData.reshape(1, stftYRawData.shape[0])
 
-        matrixAudioData = np.concatenate((matrixAudioData, stftYRawData ), axis = 0 )
+#        matrixAudioData = np.concatenate((matrixAudioData, stftYRawData ), axis = 0 )
+#        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
+#        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
+        listAudioData.append( stft )
 
         count += 1
 
         if count % COUNT_NOTICE == 0:
             print("")
             print("[", count, "/", len(audioFiles), "]")
+        
     except:
+        countFail += 1
         print(file, "[FAIL]")
+        
+        if countFail >= COUNT_FAIL:
+            break
     
 #        if count >= 100:
 #            break
-        
+
+matrixAudioData = np.array(listAudioData, dtype=np.float32)
+matrixAudioData = matrixAudioData.squeeze(1)
+
 print("")
 print("Matriz final:", matrixAudioData.shape)
 
@@ -165,10 +181,10 @@ print("time:", toc - tic)
 
 #%% Guardar para no tener que procesar mil veces
 
-#np.save("matrixAudioDataWithRawData", matrixAudioData)
+np.save("matrixAudioDataElse", matrixAudioData)
 
-matrixAudioData = np.load("matrixAudioData.npy")
-matrixAudioData.shape
+#matrixAudioData = np.load("matrixAudioData.npy")
+#matrixAudioData.shape
 
 #%% Principal component analysis
 
@@ -250,6 +266,20 @@ n = plt.hist(cutTree, bins=cantClusters)[0]
 plt.show()
 print("Count:")
 print(n)
+
+#%% T-sne
+
+from sklearn.manifold import TSNE
+from sklearn.metrics import pairwise_distances
+
+tic = time.clock()
+
+similarities = pairwise_distances( dist.squareform(distanceMatrix), n_jobs = -1)
+
+tsne = TSNE(n_components=2, metric="precomputed")
+positions = tsne.fit(similarities).embedding_
+
+toc = time.clock()
 
 #%% Multi-dimensional scaling
 
@@ -367,7 +397,8 @@ output = np.c_[ positions, cutTree, audioFilesForExport ]
 
 ## Para visualizar 
 
-np.savetxt("audioClusteringResultWithRaw.tsv", 
+#np.savetxt("audioClusteringResultWithRaw.tsv", 
+np.savetxt("matrixAudioDataElse.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",
