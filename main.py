@@ -14,7 +14,7 @@ import librosa.core
 import matplotlib
 import matplotlib.pyplot as plt
 
-import sounddevice as sd #conda install portaudio
+#import sounddevice as sd #conda install portaudio
 
 #%% Load Audio
 
@@ -24,7 +24,8 @@ SIZE_AUDIO_RAW = ceil(SAMPLE_RATE * SEGUNDOS_FILA)
 
 
 #SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
-SELECCION_DIR = "data/sound/else/"
+#SELECCION_DIR = "data/sound/else/"
+SELECCION_DIR = "data/sound/sonidos1Segundo/"
 FILE_TYPE=".mp3"
 
 def findMusic(directory):
@@ -181,7 +182,7 @@ print("time:", toc - tic)
 
 #%% Guardar para no tener que procesar mil veces
 
-np.save("matrixAudioDataElse", matrixAudioData)
+np.save("matrixAudioData1Segundo", matrixAudioData)
 
 #matrixAudioData = np.load("matrixAudioData.npy")
 #matrixAudioData.shape
@@ -228,7 +229,7 @@ print("time:", toc - tic)
 #%% Dendograma
 
 #THRESHOLD = 0.942
-THRESHOLD = 0.942
+THRESHOLD = 0.92
 
 
 cutTree = h.cut_tree(clusters, height= THRESHOLD)
@@ -392,13 +393,20 @@ chi2, p, dof, expected = chi2_contingency(matrizContingencia)
 #%% Output
 
 audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles ) )
+for i in range(0, len(audioFilesForExport)):
+    f = audioFilesForExport[i]
+    if f.find("\u2116") == -1:
+        print(f)
+        //audioFilesForExport[i] = audioFilesForExport[i][0:f.find("\u2116")] + FILE_TYPE
+
 output = np.c_[ positions, cutTree, audioFilesForExport ]
 
 
 ## Para visualizar 
 
 #np.savetxt("audioClusteringResultWithRaw.tsv", 
-np.savetxt("matrixAudioDataElse.tsv", 
+#np.savetxt("matrixAudioDataElse.tsv", 
+np.savetxt("tsvs/tsne-stft-1Segundo.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",
