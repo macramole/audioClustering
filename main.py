@@ -24,8 +24,9 @@ SIZE_AUDIO_RAW = ceil(SAMPLE_RATE * SEGUNDOS_FILA)
 
 
 #SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
+SELECCION_DIR = "data/sound/drumkit/"
 #SELECCION_DIR = "data/sound/else/"
-SELECCION_DIR = "data/sound/sonidos1Segundo/"
+#SELECCION_DIR = "data/sound/sonidos1Segundo/"
 FILE_TYPE=".mp3"
 
 def findMusic(directory):
@@ -105,7 +106,7 @@ plt.tight_layout()
 
 #Mel spectogram
 testMelSpectogram = librosa.feature.melspectrogram(testAudioData, SAMPLE_RATE)
-librosa.display.specshow( librosa.core.power_to_db(testMelSpectogram , ref=np.max), y_axis='mel', fmax=8000,x_axis='time')
+librosa.display.specshow( librosa.core.power_to_db(mfcc, ref=np.max), y_axis='mel', fmax=8000,x_axis='time')
 plt.colorbar(format='%+2.0f dB')
 plt.title('Mel spectrogram')
 plt.tight_layout()
@@ -137,7 +138,11 @@ listAudioData = []
 
 tic = time.clock()
 
+audioFilesDone = []
+
 for file in audioFiles:
+    count += 1
+    
     try:
         print(".", end="")
 
@@ -145,7 +150,8 @@ for file in audioFiles:
         
         tmpAudioData.resize(SIZE_AUDIO_RAW)
 
-        stft = doSTFT(tmpAudioData)
+#        stft = doSTFT(tmpAudioData)
+        mfcc = getMFCC(tmpAudioData)
     
 #        stftYRawData = np.concatenate( (stft, tmpAudioData ) )
 #        stftYRawData = stftYRawData.reshape(1, stftYRawData.shape[0])
@@ -153,9 +159,9 @@ for file in audioFiles:
 #        matrixAudioData = np.concatenate((matrixAudioData, stftYRawData ), axis = 0 )
 #        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
 #        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
-        listAudioData.append( stft )
-
-        count += 1
+#        listAudioData.append( stft )
+        listAudioData.append( mfcc ) 
+        audioFilesDone.append(file)
 
         if count % COUNT_NOTICE == 0:
             print("")
@@ -163,16 +169,19 @@ for file in audioFiles:
         
     except:
         countFail += 1
+        print("")
         print(file, "[FAIL]")
+#        audioFiles.remove( file )
         
         if countFail >= COUNT_FAIL:
+            print("Too many failures")
             break
     
 #        if count >= 100:
 #            break
 
 matrixAudioData = np.array(listAudioData, dtype=np.float32)
-matrixAudioData = matrixAudioData.squeeze(1)
+#matrixAudioData = matrixAudioData.squeeze(1)
 
 print("")
 print("Matriz final:", matrixAudioData.shape)
@@ -182,7 +191,8 @@ print("time:", toc - tic)
 
 #%% Guardar para no tener que procesar mil veces
 
-np.save("matrixAudioData1Segundo", matrixAudioData)
+#np.save("matrixAudioData1Segundo", matrixAudioData)
+np.save("matrixAudioDataDrums", matrixAudioData)
 
 #matrixAudioData = np.load("matrixAudioData.npy")
 #matrixAudioData.shape
@@ -193,7 +203,7 @@ from sklearn.decomposition import PCA
 
 tic = time.clock()
 
-pca = PCA(n_components=800) #500
+pca = PCA(n_components=2)
 pca.fit(matrixAudioData)
 print("Variance explained:", pca.explained_variance_ratio_.sum())
 matrixAudioDataTransformed = pca.transform(matrixAudioData)
@@ -389,28 +399,41 @@ from scipy.stats import chi2_contingency
 chi2, p, dof, expected = chi2_contingency(matrizContingencia)
 
 
+#%% Output PCA
 
-#%% Output
+audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFilesDone ) )
+#ones = np.ones(( matrixAudioDataTransformed.shape[0] ,1), dtype="int")
 
-audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles ) )
-for i in range(0, len(audioFilesForExport)):
-    f = audioFilesForExport[i]
-    if f.find("\u2116") == -1:
-        print(f)
-        //audioFilesForExport[i] = audioFilesForExport[i][0:f.find("\u2116")] + FILE_TYPE
+output = np.c_[ matrixAudioDataTransformed, cutTree, audioFilesForExport]
 
-output = np.c_[ positions, cutTree, audioFilesForExport ]
-
-
-## Para visualizar 
-
-#np.savetxt("audioClusteringResultWithRaw.tsv", 
-#np.savetxt("matrixAudioDataElse.tsv", 
-np.savetxt("tsvs/tsne-stft-1Segundo.tsv", 
+np.savetxt("tsvs/pca-mfcc-drums.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",
            delimiter = "\t") 
+
+#%% Output
+
+audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFilesDone ) )
+#for i in range(0, len(audioFilesForExport)):
+#    f = audioFilesForExport[i]
+#    if f.find("\u2116") == -1:
+#        print(f)
+#        //audioFilesForExport[i] = audioFilesForExport[i][0:f.find("\u2116")] + FILE_TYPE
+
+output = np.c_[ positions, cutTree, audioFilesForExport ]
+
+#np.savetxt("audioClusteringResultWithRaw.tsv", 
+#np.savetxt("matrixAudioDataElse.tsv", 
+np.savetxt("tsvs/tsne-mfcc-drums.tsv", 
+           output, 
+           fmt = "%s", 
+           header = "x\ty\tcluster\tfile",
+           delimiter = "\t") 
+
+
+#%%# Para visualizar 
+
 #
 ### Matriz de contingencia
 #
