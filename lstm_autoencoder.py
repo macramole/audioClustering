@@ -1,142 +1,126 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 25 11:56:13 2017
+Created on Mon Sep 25 12:47:04 2017
 
 @author: leandro
 """
 
-#%% Imports
-
-import os
+import utils
 import numpy as np
-from math import ceil
-import time
 
-import librosa
-import librosa.display
-import librosa.core
+#import PyQt5
+#import matplotlib
 
-import matplotlib
+#%matplotlib qt5
+
 import matplotlib.pyplot as plt
 
-import vlc
-
-#%% Load Audio
-
-SAMPLE_RATE = 22050
-SEGUNDOS_FILA = 1
-SIZE_AUDIO_RAW = ceil(SAMPLE_RATE * SEGUNDOS_FILA)
-
-
-#SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
+SELECCION_DIR = "data/sound/drumkit/"
+SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
 SELECCION_DIR = "data/sound/else/"
 FILE_TYPE=".mp3"
 
-def findMusic(directory):
-    musicFiles = []
+#%% Prep data
+
+audioFiles = utils.findMusic(SELECCION_DIR, FILE_TYPE)
+print( "Found", len(audioFiles), "files" )
+
+#%% Process data
+
+matrixAudioData = utils.getAudioData(audioFiles, superVector = False, qtyFilesToProcess = 100)
+#shape : (100, 20, 44) 100 canciones, 44 tiempo, 20 mfcc
+#%% Save/Load prep data
+
+#utils.saveAudioData(matrixAudioData, "audioDataMFCCelse")
+matrixAudioData = utils.loadAudioData("audioDataMFCCelse.npy")
+
+
+#%% Scale entre 0 y 1
+# Esto da unos errores medio raros de cálculo
+
+def scale(data, min = None, max = None):
+    if min == None:
+        min = np.min(data)
+        
+    if max == None:
+        max = np.max(data)
     
-    for file in os.listdir(directory):
-        if os.path.isdir(directory + file):
-            musicFiles += findMusic(directory + file + "/")
-        elif file.endswith(FILE_TYPE):
-            musicFiles.append( directory + file )
-        else:
-            if not file.endswith(".asd"):
-                print("Skipped:", directory + file)
-    
-    return musicFiles
+    return np.divide( ( data - min ) , ( max - min) )
 
-#%% Find files
+def unScale(scaledData, min, max):
+    return ( scaledData  * ( max - min) ) + min
 
-audioFiles = findMusic( SELECCION_DIR )
-
-print("")
-print("Encontré",len(audioFiles),"archivos de audio")    
-
-#%% Procesos
-
-SIZE_STFT = 45100 #esto seguramente se pueda calcular pero bue
-def doSTFT(data):
-    D = librosa.stft(data)
-    D = np.abs(D)
-    return D.reshape(1, D.shape[0] * D.shape[1] )
-#    return D.reshape(D.shape[0] * D.shape[1] )
-
-SIZE_ZERO_CROSSING_RATE = 22 #esto seguramente se pueda calcular pero bue
-def getZeroCrossingRate(data):
-    zc = librosa.feature.zero_crossing_rate(data)
-    return zc.reshape( zc.shape[0] * zc.shape[1] )
-
-SIZE_RMSE = 22 #esto seguramente se pueda calcular pero bue
-def getRMSE(data):
-    rmse = librosa.feature.rmse(data)
-    return rmse.reshape( rmse.shape[0] * rmse.shape[1] )
-
-SIZE_MFCC = 440 #esto seguramente se pueda calcular pero bue
-def getMFCC(data):
-    mfcc = librosa.feature.mfcc(data, sr = SAMPLE_RATE)
-    return mfcc.reshape( mfcc.shape[0] * mfcc.shape[1] )
-
-
-
-#%% Testing
-
-#testAudioData, _ = librosa.core.load(audioFiles[0], sr = SAMPLE_RATE)
-audioFileToLoad = audioFiles[round( np.random.uniform(0, len(audioFiles)) )]
-testAudioData, _ = librosa.core.load( audioFileToLoad, sr = SAMPLE_RATE)
-
-vlc.MediaPlayer(audioFileToLoad).play()
-
-
-#pStream.write( testAudioData.astype(np.float32).tostring() )
-
-
-testAudioData = testAudioData[0:SIZE_AUDIO_RAW]
-#RMSE
-testRMSE = librosa.feature.rmse( testAudioData )
-plt.semilogy(testRMSE.T, label='RMS Energy')
-plt.xticks([])
-plt.xlim([0, testRMSE.shape[-1]])
-plt.legend(loc='best')
-    
-#STFT
-testSTFT = librosa.stft( testAudioData )
-testSTFTdb = librosa.amplitude_to_db(testSTFT, ref=np.max)
-#plt.subplot(4, 2, 1)
-librosa.display.specshow(testSTFTdb, y_axis='log')
-plt.colorbar(format='%+2.0f dB')
-plt.title('Log-frequency power spectrogram')
-
-#MFCC
-testMFCC = librosa.feature.mfcc( testAudioData, sr = SAMPLE_RATE )
-librosa.display.specshow(testMFCC, x_axis='time')
-plt.colorbar()
-plt.title('MFCC')
-plt.tight_layout()
-
-#Mel spectogram
-testMelSpectogram = librosa.feature.melspectrogram(testAudioData, SAMPLE_RATE)
-librosa.display.specshow( librosa.core.power_to_db(testMelSpectogram , ref=np.max), y_axis='mel', fmax=8000,x_axis='time')
-plt.colorbar(format='%+2.0f dB')
-plt.title('Mel spectrogram')
-plt.tight_layout()
-
-
-#Zero crossing
-testZeroCrossing = librosa.feature.zero_crossing_rate(testAudioData)
-
-
-#%% LSTM
-
-from keras.layers import Input, LSTM, RepeatVector
+#%% Autoencoder
+import keras
+from keras.layers import Input, LSTM, Dense, RepeatVector
 from keras.models import Model
+from keras import regularizers
+from keras import optimizers
 
-inputs = Input(shape=(timesteps, input_dim))
-encoded = LSTM(latent_dim)(inputs)
+activationFunction = "sigmoid"
+latent_dim = 2
+timesteps = matrixAudioData.shape[2]
+input_dim = matrixAudioData.shape[1]
 
-decoded = RepeatVector(timesteps)(encoded)
-decoded = LSTM(input_dim, return_sequences=True)(decoded)
+inputs = Input( shape=(timesteps, input_dim) )
+encoded = LSTM( latent_dim, activation=activationFunction )(inputs)
+
+decoded = RepeatVector( timesteps )( encoded )
+decoded = LSTM( input_dim, return_sequences = True )(decoded)
 
 sequence_autoencoder = Model(inputs, decoded)
-encoder = Model(inputs, encoded)
+encoder = Model( inputs, encoded )
+
+#autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+sgd = optimizers.SGD(lr=0.01, clipnorm=1.)
+sequence_autoencoder.compile(optimizer= sgd, loss='hinge')
+
+
+minValue = np.min(matrixAudioData)
+maxValue = np.max(matrixAudioData)
+scaledMatrixAudiodata = scale(matrixAudioData, minValue, maxValue)
+
+#tbCallBack = keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
+
+history = sequence_autoencoder.fit(scaledMatrixAudiodata, scaledMatrixAudiodata.reshape(100,44,20),
+                epochs=1000,
+                batch_size=10,
+                shuffle=True)
+#                callbacks = [tbCallBack] )
+#                validation_data=(x_test, x_test))
+
+plt.plot(history.history["loss"])
+
+    #%% Save model
+sequence_autoencoder.save("LSTM_autoencoder.model")
+sequence_autoencoderJSON = sequence_autoencoder.to_json()
+with open("LSTM_autoencoder.json", "w") as json_file:
+    json_file.write(sequence_autoencoderJSON )
+
+
+#%% "test" model
+    
+#test = autoencoder.predict( scale(matrixAudioData[0,:], minValue, maxValue).reshape((1,880)) )
+#test = unScale( test, minValue, maxValue )
+#
+#matrixAudioData[0,:]
+    
+#%% Inspecciono
+        
+activaciones = utils.get_activations( sequence_autoencoder, scaledMatrixAudiodata.reshape(100,44,20), True )
+activaciones = np.array(activaciones[1])
+#activaciones = np.power(activaciones,-20)
+#activaciones = np.power(activaciones,0.01)
+
+plt.scatter( activaciones[:,0], activaciones[:,1] )
+
+#%% output
+audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles[0:100] ) )
+output = np.c_[ activaciones, np.repeat(1,len(audioFilesForExport)), audioFilesForExport ]
+
+np.savetxt("tsvs/LSTM_autoencoder-mfcc-drums.tsv", 
+           output, 
+           fmt = "%s", 
+           header = "x\ty\tcluster\tfile",
+           delimiter = "\t") 

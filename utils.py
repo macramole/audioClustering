@@ -21,7 +21,7 @@ def findMusic(directory, fileType):
     
     for file in os.listdir(directory):
         if os.path.isdir(directory + file):
-            musicFiles += findMusic(directory + file + "/")
+            musicFiles += findMusic(directory + file + "/", fileType)
         elif file.endswith(fileType):
             musicFiles.append( directory + file )
         else:
@@ -48,12 +48,14 @@ def getRMSE(data):
     return rmse.reshape( rmse.shape[0] * rmse.shape[1] )
 
 SIZE_MFCC = 440 #esto seguramente se pueda calcular pero bue
-def getMFCC(data):
+def getMFCC(data, superVector = True):
     mfcc = librosa.feature.mfcc(data, sr = SAMPLE_RATE)
-    return mfcc.reshape( mfcc.shape[0] * mfcc.shape[1] )
+    if superVector:
+        return mfcc.reshape( mfcc.shape[0] * mfcc.shape[1] )
+    else:
+        return mfcc.reshape( (mfcc.shape[1], mfcc.shape[0] ) )
 
-
-def getAudioData( audioFiles, qtyFilesToProcess = None ):
+def getAudioData( audioFiles, superVector = True, qtyFilesToProcess = None ):
     count = 0
     countFail = 0
     COUNT_NOTICE = 200
@@ -75,7 +77,7 @@ def getAudioData( audioFiles, qtyFilesToProcess = None ):
             
             tmpAudioData.resize(SIZE_AUDIO_RAW)
     
-            mfcc = getMFCC(tmpAudioData)
+            mfcc = getMFCC(tmpAudioData, superVector)
 #            stft = doSTFT(tmpAudioData)
         
 #            listAudioData.append( stft )
@@ -115,9 +117,10 @@ def loadAudioData( filename ):
     
 #%% functiones para inspeccionar activaciones
 
-import keras.backend as K
 
 def get_activations(model, model_inputs, print_shape_only=False, layer_name=None):
+    import keras.backend as K
+
     print('----- activations -----')
     activations = []
     inp = model.input
