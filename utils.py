@@ -55,6 +55,39 @@ def getMFCC(data, superVector = True):
     else:
         return mfcc.reshape( (mfcc.shape[1], mfcc.shape[0] ) )
 
+def scaleByRow(data):
+    
+    scaledData = np.copy(data)
+    
+#    if min == None:
+#        min = np.min(data)
+#        
+#    if max == None:
+#        max = np.max(data)
+    
+    #si es un solo MFCC
+    if len(data.shape) == 2:
+        for row in range(0, scaledData.shape[0]):
+            min = np.min( scaledData[row,:] )
+            max = np.max( scaledData[row,:] )
+            scaledData[row, :] = np.divide( ( scaledData[row, :] - min ) , ( max - min) )
+    elif len(data.shape) == 3:
+        for row in range(0, scaledData.shape[1]):
+            min = np.min ( np.min( data[:,row,:], axis = 1 ) )
+            max = np.max ( np.max( data[:,row,:], axis = 1 ) )
+            scaledData[:, row, :] = np.divide( ( scaledData[:, row, :] - min ) , ( max - min) )
+            
+        
+    else:
+        scaledData = None
+    
+    
+    return scaledData
+            
+
+def unScale(scaledData, min, max):
+    return ( scaledData  * ( max - min) ) + min
+
 def getAudioData( audioFiles, superVector = True, qtyFilesToProcess = None ):
     count = 0
     countFail = 0
@@ -64,6 +97,8 @@ def getAudioData( audioFiles, superVector = True, qtyFilesToProcess = None ):
     listAudioData = []
     
     tic = time.clock()
+    
+    audioFilesDone = []
     
     if qtyFilesToProcess == None:
         qtyFilesToProcess = len(audioFiles)
@@ -82,6 +117,7 @@ def getAudioData( audioFiles, superVector = True, qtyFilesToProcess = None ):
         
 #            listAudioData.append( stft )
             listAudioData.append( mfcc )
+            audioFilesDone.append(file)
     
             count += 1
     
@@ -98,6 +134,8 @@ def getAudioData( audioFiles, superVector = True, qtyFilesToProcess = None ):
         
     matrixAudioData = np.array(listAudioData, dtype=np.float32)
 #    matrixAudioData = matrixAudioData.squeeze(1)
+    audioFiles.clear()
+    audioFiles += audioFilesDone
     
     print("")
     print("Matriz final:", matrixAudioData.shape)

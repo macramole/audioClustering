@@ -78,10 +78,16 @@ def getMFCC(data):
 
 #%% Testing
 
+import vlc
 #testAudioData, _ = librosa.core.load(audioFiles[0], sr = SAMPLE_RATE)
-testAudioData, _ = librosa.core.load( audioFiles[round( np.random.uniform(0, len(audioFiles)) )], sr = SAMPLE_RATE)
-sd.play( testAudioData )
-testAudioData = testAudioData[0:SIZE_AUDIO_RAW]
+testAudioFileName = audioFiles[round( np.random.uniform(0, len(audioFiles)) )]
+vlc.MediaPlayer(testAudioFileName).play()
+
+testAudioData, _ = librosa.core.load( testAudioFileName, sr = SAMPLE_RATE)
+testAudioData.resize(SIZE_AUDIO_RAW)
+
+b = testAudioFileName
+
 #RMSE
 testRMSE = librosa.feature.rmse( testAudioData )
 plt.semilogy(testRMSE.T, label='RMS Energy')
@@ -97,16 +103,18 @@ librosa.display.specshow(testSTFTdb, y_axis='log')
 plt.colorbar(format='%+2.0f dB')
 plt.title('Log-frequency power spectrogram')
 
+%matplotlib inline
+
 #MFCC
 testMFCC = librosa.feature.mfcc( testAudioData, sr = SAMPLE_RATE )
-librosa.display.specshow(testMFCC, x_axis='time')
+librosa.display.specshow( utils.scaleByRow(testMFCC), x_axis='time')
 plt.colorbar()
 plt.title('MFCC')
 plt.tight_layout()
 
 #Mel spectogram
 testMelSpectogram = librosa.feature.melspectrogram(testAudioData, SAMPLE_RATE)
-librosa.display.specshow( librosa.core.power_to_db(mfcc, ref=np.max), y_axis='mel', fmax=8000,x_axis='time')
+librosa.display.specshow( librosa.core.power_to_db(testMelSpectogram, ref=np.max), y_axis='mel', fmax=8000,x_axis='time')
 plt.colorbar(format='%+2.0f dB')
 plt.title('Mel spectrogram')
 plt.tight_layout()

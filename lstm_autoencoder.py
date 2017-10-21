@@ -17,8 +17,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 SELECCION_DIR = "data/sound/drumkit/"
-SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
-SELECCION_DIR = "data/sound/else/"
+#SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
+#SELECCION_DIR = "data/sound/else/"
 FILE_TYPE=".mp3"
 
 #%% Prep data
@@ -28,28 +28,19 @@ print( "Found", len(audioFiles), "files" )
 
 #%% Process data
 
-matrixAudioData = utils.getAudioData(audioFiles, superVector = False, qtyFilesToProcess = 100)
-#shape : (100, 20, 44) 100 canciones, 44 tiempo, 20 mfcc
+#matrixAudioData = utils.getAudioData(audioFiles, superVector = False, qtyFilesToProcess = 100)
+matrixAudioData = utils.getAudioData(audioFiles, superVector = False)
+#shape : (100, 44, 20) 100 canciones, 44 tiempo, 20 mfcc
 #%% Save/Load prep data
 
-#utils.saveAudioData(matrixAudioData, "audioDataMFCCelse")
-matrixAudioData = utils.loadAudioData("audioDataMFCCelse.npy")
-
+#utils.saveAudioData(matrixAudioData, "audioDataMFCCNotSV_Drums")
+matrixAudioData = utils.loadAudioData("audioDataMFCCNotSV_Drums.npy")
+matrixAudioData.shape
 
 #%% Scale entre 0 y 1
 # Esto da unos errores medio raros de cálculo
 
-def scale(data, min = None, max = None):
-    if min == None:
-        min = np.min(data)
-        
-    if max == None:
-        max = np.max(data)
-    
-    return np.divide( ( data - min ) , ( max - min) )
 
-def unScale(scaledData, min, max):
-    return ( scaledData  * ( max - min) ) + min
 
 #%% Autoencoder
 import keras
@@ -60,8 +51,8 @@ from keras import optimizers
 
 activationFunction = "sigmoid"
 latent_dim = 2
-timesteps = matrixAudioData.shape[2]
-input_dim = matrixAudioData.shape[1]
+timesteps = matrixAudioData.shape[1]
+input_dim = matrixAudioData.shape[2]
 
 inputs = Input( shape=(timesteps, input_dim) )
 encoded = LSTM( latent_dim, activation=activationFunction )(inputs)
@@ -76,23 +67,31 @@ encoder = Model( inputs, encoded )
 sgd = optimizers.SGD(lr=0.01, clipnorm=1.)
 sequence_autoencoder.compile(optimizer= sgd, loss='hinge')
 
-
-minValue = np.min(matrixAudioData)
-maxValue = np.max(matrixAudioData)
-scaledMatrixAudiodata = scale(matrixAudioData, minValue, maxValue)
-
+#esto habría que ver si es correcto
+#minValue = np.min(matrixAudioData)
+#maxValue = np.max(matrixAudioData)
+scaledMatrixAudiodata = utils.scaleByRow(matrixAudioData)
+scaledMatrixAudiodata.shape
 #tbCallBack = keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
-history = sequence_autoencoder.fit(scaledMatrixAudiodata, scaledMatrixAudiodata.reshape(100,44,20),
-                epochs=1000,
-                batch_size=10,
+#%% Train
+
+history = sequence_autoencoder.fit( np.fliplr(scaledMatrixAudiodata), scaledMatrixAudiodata,
+                epochs=500,#en 500 ya medio que esta
+                batch_size=100,
                 shuffle=True)
 #                callbacks = [tbCallBack] )
 #                validation_data=(x_test, x_test))
 
 plt.plot(history.history["loss"])
 
-    #%% Save model
+#%% Viz del modelo
+
+from keras.utils import plot_model
+
+plot_model(sequence_autoencoder)
+
+#%% Save model
 sequence_autoencoder.save("LSTM_autoencoder.model")
 sequence_autoencoderJSON = sequence_autoencoder.to_json()
 with open("LSTM_autoencoder.json", "w") as json_file:
@@ -108,7 +107,7 @@ with open("LSTM_autoencoder.json", "w") as json_file:
     
 #%% Inspecciono
         
-activaciones = utils.get_activations( sequence_autoencoder, scaledMatrixAudiodata.reshape(100,44,20), True )
+activaciones = utils.get_activations( sequence_autoencoder, scaledMatrixAudiodata, True )
 activaciones = np.array(activaciones[1])
 #activaciones = np.power(activaciones,-20)
 #activaciones = np.power(activaciones,0.01)
@@ -116,7 +115,7 @@ activaciones = np.array(activaciones[1])
 plt.scatter( activaciones[:,0], activaciones[:,1] )
 
 #%% output
-audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles[0:100] ) )
+audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles ) )
 output = np.c_[ activaciones, np.repeat(1,len(audioFilesForExport)), audioFilesForExport ]
 
 np.savetxt("tsvs/LSTM_autoencoder-mfcc-drums.tsv", 
