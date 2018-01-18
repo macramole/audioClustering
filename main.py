@@ -24,7 +24,7 @@ SIZE_AUDIO_RAW = ceil(SAMPLE_RATE * SEGUNDOS_FILA)
 
 
 #SELECCION_DIR = "data/sound/pack/drumkits.mp3/"
-SELECCION_DIR = "data/sound/drumkit/"
+SELECCION_DIR = "data/sound/anto.mp3/"
 #SELECCION_DIR = "data/sound/else/"
 #SELECCION_DIR = "data/sound/sonidos1Segundo/"
 FILE_TYPE=".mp3"
@@ -158,17 +158,12 @@ for file in audioFiles:
         
         tmpAudioData.resize(SIZE_AUDIO_RAW)
 
-#        stft = doSTFT(tmpAudioData)
-        mfcc = getMFCC(tmpAudioData)
+        stft = doSTFT(tmpAudioData)
+        listAudioData.append( stft )
+        
+#        mfcc = getMFCC(tmpAudioData)
+#        listAudioData.append( mfcc )
     
-#        stftYRawData = np.concatenate( (stft, tmpAudioData ) )
-#        stftYRawData = stftYRawData.reshape(1, stftYRawData.shape[0])
-
-#        matrixAudioData = np.concatenate((matrixAudioData, stftYRawData ), axis = 0 )
-#        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
-#        matrixAudioData = np.concatenate((matrixAudioData, stft ), axis = 0 )
-#        listAudioData.append( stft )
-        listAudioData.append( mfcc ) 
         audioFilesDone.append(file)
 
         if count % COUNT_NOTICE == 0:
@@ -211,7 +206,7 @@ from sklearn.decomposition import PCA
 
 tic = time.clock()
 
-pca = PCA(n_components=2)
+pca = PCA(n_components=800)
 pca.fit(matrixAudioData)
 print("Variance explained:", pca.explained_variance_ratio_.sum())
 matrixAudioDataTransformed = pca.transform(matrixAudioData)
@@ -246,8 +241,8 @@ print("time:", toc - tic)
 
 #%% Dendograma
 
-#THRESHOLD = 0.942
-THRESHOLD = 0.92
+THRESHOLD = 0.995
+#THRESHOLD = 0.92
 
 
 cutTree = h.cut_tree(clusters, height= THRESHOLD)
@@ -433,7 +428,8 @@ output = np.c_[ positions, cutTree, audioFilesForExport ]
 
 #np.savetxt("audioClusteringResultWithRaw.tsv", 
 #np.savetxt("matrixAudioDataElse.tsv", 
-np.savetxt("tsvs/tsne-mfcc-drums.tsv", 
+#np.savetxt("tsvs/tsne-mfcc-drums.tsv", 
+np.savetxt("tsvs/tsne2-stft-anto.mp3.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",

@@ -37,11 +37,6 @@ matrixAudioData = utils.getAudioData(audioFiles, superVector = False)
 matrixAudioData = utils.loadAudioData("audioDataMFCCNotSV_Drums.npy")
 matrixAudioData.shape
 
-#%% Scale entre 0 y 1
-# Esto da unos errores medio raros de cálculo
-
-
-
 #%% Autoencoder
 import keras
 from keras.layers import Input, LSTM, Dense, RepeatVector
@@ -118,7 +113,7 @@ plt.scatter( activaciones[:,0], activaciones[:,1] )
 audioFilesForExport = list( map( lambda x : x[len(SELECCION_DIR):], audioFiles ) )
 output = np.c_[ activaciones, np.repeat(1,len(audioFilesForExport)), audioFilesForExport ]
 
-np.savetxt("tsvs/LSTM_autoencoder-mfcc-drums.tsv", 
+np.savetxt("tsvs/LSTM_autoencoder-scaleByRow-mfcc-drums.tsv", 
            output, 
            fmt = "%s", 
            header = "x\ty\tcluster\tfile",
