@@ -66,9 +66,9 @@ output = np.c_[ tsne, clusters, audioFilesForExport ]
 tsv = ""
 for row in output:
     for field in row:
-        tsv += field + "\t"
-    # tsv = tsv[0:-1]
-    tsv += "\n"
+        tsv += field + ","
+    tsv = tsv[0:-1]
+    tsv += "|"
 
 jsonSession["tsv"] = tsv
 
