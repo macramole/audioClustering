@@ -39,9 +39,9 @@ def getSTFT(data, superVector = True):
     D = np.abs(D)
 
     if superVector:
-        return D.reshape( mfcc.shape[0] * mfcc.shape[1] )
+        return D.reshape( D.shape[0] * D.shape[1] )
     else:
-        return D.reshape( (mfcc.shape[1], mfcc.shape[0] ) )
+        return D.reshape( (D.shape[1], D.shape[0] ) )
 
 SIZE_ZERO_CROSSING_RATE = 22 #esto seguramente se pueda calcular pero bue
 def getZeroCrossingRate(data):
@@ -124,7 +124,7 @@ def getAudioData( audioFiles, superVector = True, features = "mfcc", qtyFilesToP
             if features == "mfcc":
                 featuresData = getMFCC(tmpAudioData, superVector)
             elif features == "stft":
-                featuresData = doSTFT(tmpAudioData)
+                featuresData = getSTFT(tmpAudioData)
 
             listAudioData.append( featuresData )
             audioFilesDone.append(file)
