@@ -3,3 +3,4 @@ data
 results
 matrixAudioData.npy
 audioClusteringUi/bin/data
+__pycache__/
