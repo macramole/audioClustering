@@ -179,21 +179,33 @@ def doPCA( matrixAudioData ):
     print("time:", toc - tic)
     return matrixAudioDataTransformed
 
-def doHierachicalClustering( matrixAudioDataTransformed, threshold = 0.995 ):
+def doDistanceMatrix( matrixAudioDataTransformed ):
+    from scipy.spatial import distance as dist
     global distanceMatrix
 
+    distanceFunction = 'cosine' #canberra, cityblock, braycurtis, euclidean
+
+    print("Processing distance matrix...")
+    print("Distance function:", distanceFunction)
+
+    tic = time.clock()
+    distanceMatrix = dist.pdist(matrixAudioDataTransformed, distanceFunction)
+    toc = time.clock()
+    print("time:", toc - tic)
+
+def doHierachicalClustering( matrixAudioDataTransformed, threshold = 0.992 ):
     from scipy.cluster import hierarchy as h
     from scipy.spatial import distance as dist
 
-    distanceFunction = 'cosine' #canberra, cityblock, braycurtis, euclidean
     linkageType = 'average' #single, complete, weighted, average
 
-    print("Distance function:", distanceFunction)
     print("Linkage type:", linkageType)
+
+    if distanceMatrix == None:
+        doDistanceMatrix(matrixAudioDataTransformed)
 
     tic = time.clock()
 
-    distanceMatrix = dist.pdist(matrixAudioDataTransformed, distanceFunction)
     clusters = h.linkage(distanceMatrix, linkageType)
     c,d=h.cophenet(clusters, distanceMatrix) #factor cofonético
 
@@ -208,7 +220,7 @@ def doHierachicalClustering( matrixAudioDataTransformed, threshold = 0.995 ):
 
     return cutTree
 
-def doTSNE( matrixAudioDataTransformed ):
+def doTSNE( matrixAudioDataTransformed, n_components = 2 ):
     from sklearn.manifold import TSNE
     from sklearn.metrics import pairwise_distances
     from scipy.spatial import distance as dist
@@ -217,18 +229,20 @@ def doTSNE( matrixAudioDataTransformed ):
 
     similarities = pairwise_distances( dist.squareform(distanceMatrix), n_jobs = -1)
 
-    tsne = TSNE(n_components=2, metric="precomputed")
+    tsne = TSNE(n_components=n_components, metric="precomputed")
     positions = tsne.fit(similarities).embedding_
 
     toc = time.clock()
 
     return positions
 
-#matrixAudioData =
-#matrixAudioData.shape
+def doDBScan( tsneResult ):
+    from sklearn.cluster import DBSCAN
 
-#%% functiones para inspeccionar activaciones
+    db = DBSCAN( eps=2, min_samples=3, metric="euclidean" )
+    dbFit = db.fit( tsneResult )
 
+    return dbFit.labels_
 
 def get_activations(model, model_inputs, print_shape_only=False, layer_name=None):
     import keras.backend as K
