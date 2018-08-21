@@ -76,7 +76,7 @@ print("Now saving session file")
 import json
 
 jsonSession = {
-    "audioFilesPath" : "./%s/" % audioFilesPathDirectoryName,
+    "audioFilesPath" : "%s/" % audioFilesPathDirectoryName,
     "tsv" : ""
 }
 
